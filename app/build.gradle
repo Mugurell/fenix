@@ -4,11 +4,12 @@ plugins {
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'jacoco'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'com.google.android.gms.oss-licenses-plugin'
-
+apply plugin: 'dagger.hilt.android.plugin'
 
 import com.android.build.OutputFile
 import groovy.json.JsonOutput
@@ -310,6 +311,10 @@ androidExtensions {
     experimental = true
 }
 
+kapt {
+    correctErrorTypes true
+}
+
 // Generate Kotlin code and markdown docs for the Fenix Glean metrics.
 ext.gleanGenerateMarkdownDocs = true
 ext.gleanDocsDirectory = "$rootDir/docs"
@@ -433,6 +438,11 @@ dependencies {
     implementation Deps.androidx_work_ktx
     implementation Deps.google_material
 
+    implementation Deps.google_hilt_android
+    implementation Deps.google_hilt_viewmodel
+    kapt Deps.google_hilt_android_compiler
+    kapt Deps.google_hilt_androidx_compiler
+
     implementation Deps.lottie
 
     implementation Deps.adjust
@@ -485,6 +495,11 @@ dependencies {
     implementation Deps.mozilla_support_rusthttp
 
     testImplementation Deps.mockk
+
+    androidTestImplementation Deps.google_hilt_android_testing
+    testImplementation Deps.google_hilt_android_testing
+    kaptAndroidTest Deps.google_hilt_android_compiler
+    kaptTest Deps.google_hilt_android_compiler
 
     // For the initial release of Glean 19, we require consumer applications to
     // depend on a separate library for unit tests. This will be removed in future releases.

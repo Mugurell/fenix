@@ -28,6 +28,8 @@ object Versions {
     const val androidx_transition = "1.3.0"
     const val androidx_work = "2.2.0"
     const val google_material = "1.1.0"
+    const val google_hilt = "2.28-alpha"
+    const val androidx_hilt = "1.0.0-alpha02"
 
     const val mozilla_android_components = AndroidComponents.VERSION
 
@@ -176,6 +178,12 @@ object Deps {
     const val androidx_work_ktx = "androidx.work:work-runtime-ktx:${Versions.androidx_work}"
     const val androidx_work_testing = "androidx.work:work-testing:${Versions.androidx_work}"
     const val google_material = "com.google.android.material:material:${Versions.google_material}"
+    const val google_hilt_gradle = "com.google.dagger:hilt-android-gradle-plugin:${Versions.google_hilt}"
+    const val google_hilt_android = "com.google.dagger:hilt-android:${Versions.google_hilt}"
+    const val google_hilt_android_compiler = "com.google.dagger:hilt-android-compiler:${Versions.google_hilt}"
+    const val google_hilt_androidx_compiler = "androidx.hilt:hilt-compiler:${Versions.androidx_hilt}"
+    const val google_hilt_viewmodel = "androidx.hilt:hilt-lifecycle-viewmodel:${Versions.androidx_hilt}"
+    const val google_hilt_android_testing = "com.google.dagger:hilt-android-testing:${Versions.google_hilt}"
 
     const val adjust = "com.adjust.sdk:adjust-android:${Versions.adjust}"
     const val installreferrer = "com.android.installreferrer:installreferrer:${Versions.installreferrer}"
@@ -233,8 +241,9 @@ object Deps {
 object RepoMatching {
     const val mozilla = "org\\.mozilla\\..*"
     const val androidx = "androidx\\..*"
-    const val comAndroid = "com\\.android\\..*"
+    const val comAndroid = "com\\.android(\\..*)?"
     const val comGoogleFirebase = "com\\.google\\.firebase"
+    const val comGoogleDagger = "com\\.google\\.dagger"
 
     /**
      * A matcher for com.google.android.* with one exception: the espresso-contrib dependency includes the
