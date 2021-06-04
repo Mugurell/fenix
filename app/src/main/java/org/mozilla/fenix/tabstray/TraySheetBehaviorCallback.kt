@@ -4,10 +4,14 @@
 
 package org.mozilla.fenix.tabstray
 
+import android.content.res.Configuration
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 
 class TraySheetBehaviorCallback(
     private val behavior: BottomSheetBehavior<ConstraintLayout>,
@@ -28,17 +32,23 @@ class TraySheetBehaviorCallback(
 }
 
 fun BottomSheetBehavior<ConstraintLayout>.setUpTrayBehavior(
-    isLandscape: Boolean,
     maxNumberOfTabs: Int,
     numberForExpandingTray: Int,
-    navigationInteractor: DefaultNavigationInteractor
+    navigationInteractor: DefaultNavigationInteractor,
+    lifecycleScope: LifecycleCoroutineScope,
+    currentOrientation: StateFlow<Int>
 ) {
     addBottomSheetCallback(
         TraySheetBehaviorCallback(this, navigationInteractor)
     )
-    state = if (isLandscape || maxNumberOfTabs >= numberForExpandingTray) {
-        BottomSheetBehavior.STATE_EXPANDED
-    } else {
-        BottomSheetBehavior.STATE_COLLAPSED
+
+    lifecycleScope.launchWhenStarted {
+        currentOrientation.collect {
+            state = if (it == Configuration.ORIENTATION_LANDSCAPE || maxNumberOfTabs >= numberForExpandingTray) {
+                BottomSheetBehavior.STATE_EXPANDED
+            } else {
+                BottomSheetBehavior.STATE_COLLAPSED
+            }
+        }
     }
 }

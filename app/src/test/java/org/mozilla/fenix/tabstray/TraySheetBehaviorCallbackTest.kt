@@ -4,7 +4,10 @@
 
 package org.mozilla.fenix.tabstray
 
+import android.content.res.Configuration
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HALF_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
@@ -16,8 +19,14 @@ import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.TestCoroutineScope
+import mozilla.components.support.test.robolectric.createAddedTestFragment
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 
+@RunWith(FenixRobolectricTestRunner::class)
 class TraySheetBehaviorCallbackTest {
 
     @Test
@@ -56,38 +65,110 @@ class TraySheetBehaviorCallbackTest {
     }
 
     @Test
-    fun `GIVEN portraitMode and 5 tabs WHEN setUpTrayBehavior THEN add TraySheetBehaviorCallback and STATE_COLLAPSED`() {
-        // given
+    fun `GIVEN more tabs opened than the expanding limit WHEN orientation is portrait THEN the behavior is set as expanded`() {
         val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
-        val interactor = mockk<DefaultNavigationInteractor>(relaxed = true)
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_PORTRAIT)
 
-        // when
         behavior.setUpTrayBehavior(
-            isLandscape = false,
             maxNumberOfTabs = 5,
-            numberForExpandingTray = TabsTrayFragment.EXPAND_AT_LIST_SIZE,
-            navigationInteractor = interactor
+            numberForExpandingTray = 4,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
         )
 
-        // then
         assert(behavior.state == STATE_EXPANDED)
     }
 
     @Test
-    fun `GIVEN portraitMode and 2 tabs WHEN setUpTrayBehavior THEN add TraySheetBehaviorCallback and STATE_COLLAPSED`() {
-        // given
+    fun `GIVEN the number of tabs opened is exactly the expanding limit WHEN orientation is portrait THEN the behavior is set as expanded`() {
         val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
-        val interactor = mockk<DefaultNavigationInteractor>(relaxed = true)
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_PORTRAIT)
 
-        // when
         behavior.setUpTrayBehavior(
-            isLandscape = false,
-            maxNumberOfTabs = 2,
-            numberForExpandingTray = TabsTrayFragment.EXPAND_AT_LIST_SIZE,
-            navigationInteractor = interactor
+            maxNumberOfTabs = 5,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
         )
 
-        // then
+        assert(behavior.state == STATE_EXPANDED)
+    }
+
+    @Test
+    fun `GIVEN fewer tabs opened than the expanding limit WHEN orientation is portrait THEN the behavior is set as collapsed`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_PORTRAIT)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 4,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
         assert(behavior.state == STATE_COLLAPSED)
+    }
+
+    @Test
+    fun `GIVEN more tabs opened than the expanding limit WHEN orientation is landscape THEN the behavior is set as expanded`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_LANDSCAPE)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 5,
+            numberForExpandingTray = 4,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
+        assert(behavior.state == STATE_EXPANDED)
+    }
+
+    @Test
+    fun `GIVEN the number of tabs opened is exactly the expanding limit WHEN orientation is landscape THEN the behavior is set as expanded`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_LANDSCAPE)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 5,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
+        assert(behavior.state == STATE_EXPANDED)
+    }
+
+    @Test
+    fun `GIVEN fewer tabs opened than the expanding limit WHEN orientation is landscape THEN the behavior is set as expanded`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_LANDSCAPE)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 4,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
+        assert(behavior.state == STATE_EXPANDED)
     }
 }

@@ -28,6 +28,8 @@ import kotlinx.android.synthetic.main.fragment_tab_tray_dialog.*
 import kotlinx.android.synthetic.main.tabs_tray_tab_counter2.*
 import kotlinx.android.synthetic.main.tabstray_multiselect_items.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.browser.state.selector.privateTabs
 import mozilla.components.browser.state.store.BrowserStore
@@ -59,6 +61,8 @@ import org.mozilla.fenix.tabstray.ext.message
 @Suppress("TooManyFunctions", "LargeClass")
 class TabsTrayFragment : AppCompatDialogFragment() {
     private var fabView: View? = null
+    private var _currentOrientation = MutableStateFlow(Configuration.ORIENTATION_UNDEFINED)
+    @VisibleForTesting internal val currentOrientation: StateFlow<Int> = _currentOrientation
     @VisibleForTesting internal lateinit var tabsTrayStore: TabsTrayStore
     private lateinit var browserTrayInteractor: BrowserTrayInteractor
     private lateinit var tabsTrayInteractor: TabsTrayInteractor
@@ -89,6 +93,8 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         val containerView = inflater.inflate(R.layout.fragment_tab_tray_dialog, container, false)
         val view: View = LayoutInflater.from(containerView.context)
             .inflate(R.layout.component_tabstray2, containerView as ViewGroup, true)
+
+        _currentOrientation.value = resources.configuration.orientation
 
         behavior = BottomSheetBehavior.from(view.tab_wrapper)
 
@@ -165,7 +171,6 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         }
 
         behavior.setUpTrayBehavior(
-            isLandscape = requireContext().resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
             maxNumberOfTabs = max(
                 requireContext().components.core.store.state.normalTabs.size,
                 requireContext().components.core.store.state.privateTabs.size
@@ -175,7 +180,9 @@ class TabsTrayFragment : AppCompatDialogFragment() {
             } else {
                 EXPAND_AT_LIST_SIZE
             },
-            navigationInteractor = navigationInteractor
+            navigationInteractor = navigationInteractor,
+            lifecycleScope,
+            currentOrientation
         )
 
         tabsTrayCtaBinding.set(
@@ -267,6 +274,14 @@ class TabsTrayFragment : AppCompatDialogFragment() {
             owner = this,
             view = view
         )
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (_currentOrientation.value != newConfig.orientation) {
+            _currentOrientation.value = newConfig.orientation
+        }
     }
 
     @VisibleForTesting

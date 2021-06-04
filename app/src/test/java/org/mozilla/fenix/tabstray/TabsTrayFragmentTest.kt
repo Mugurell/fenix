@@ -5,12 +5,15 @@
 package org.mozilla.fenix.tabstray
 
 import android.content.Context
+import android.content.res.Configuration
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
@@ -343,5 +346,29 @@ class TabsTrayFragmentTest {
         fragment.dismissTabsTray()
 
         verify { fragment.dismissAllowingStateLoss() }
+    }
+
+    @Test
+    fun `WHEN onCreateView is called THEN currentOrientation is updated with the current orientation`() {
+        // fragment is not attached to an activity so a call to viewModelStore from onCreateView would trigger an ISE.
+        every { fragment.viewModelStore } returns ViewModelStore()
+        assertEquals(Configuration.ORIENTATION_UNDEFINED, fragment.currentOrientation.value)
+
+        every { fragment.resources.configuration } returns Configuration().apply { orientation = Configuration.ORIENTATION_PORTRAIT }
+
+        fragment.onCreateView(LayoutInflater.from(testContext), null, null)
+
+        assertEquals(Configuration.ORIENTATION_PORTRAIT, fragment.currentOrientation.value)
+    }
+
+    @Test
+    fun `WHEN onConfigurationChanged is called for a new orientation THEN the currentOrientation is updated`() {
+        assertEquals(Configuration.ORIENTATION_UNDEFINED, fragment.currentOrientation.value)
+
+        fragment.onConfigurationChanged(Configuration().apply { orientation = Configuration.ORIENTATION_PORTRAIT })
+        assertEquals(Configuration.ORIENTATION_PORTRAIT, fragment.currentOrientation.value)
+
+        fragment.onConfigurationChanged(Configuration().apply { orientation = Configuration.ORIENTATION_LANDSCAPE })
+        assertEquals(Configuration.ORIENTATION_LANDSCAPE, fragment.currentOrientation.value)
     }
 }
