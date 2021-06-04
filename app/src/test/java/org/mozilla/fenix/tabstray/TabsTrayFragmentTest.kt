@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import io.mockk.Runs
@@ -38,6 +39,7 @@ import mozilla.components.browser.menu.BrowserMenu
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
@@ -370,5 +372,17 @@ class TabsTrayFragmentTest {
 
         fragment.onConfigurationChanged(Configuration().apply { orientation = Configuration.ORIENTATION_LANDSCAPE })
         assertEquals(Configuration.ORIENTATION_LANDSCAPE, fragment.currentOrientation.value)
+    }
+
+    @Test
+    fun `WHEN the tabs tray is declared in XML THEN certain options are set for the behavior`() {
+        val view: View = LayoutInflater.from(testContext)
+            .inflate(R.layout.component_tabstray2, CoordinatorLayout(testContext), true)
+        val behavior = BottomSheetBehavior.from(view.tab_wrapper)
+
+        assertFalse(behavior.isFitToContents)
+        assertFalse(behavior.skipCollapsed)
+        assertEquals(80, behavior.expandedOffset)
+        assert(behavior.halfExpandedRatio <= 0.001f)
     }
 }

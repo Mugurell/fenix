@@ -20,8 +20,8 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.TestCoroutineScope
 import mozilla.components.support.test.robolectric.createAddedTestFragment
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
@@ -170,5 +170,45 @@ class TraySheetBehaviorCallbackTest {
         )
 
         assert(behavior.state == STATE_EXPANDED)
+    }
+
+    @Test
+    fun `WHEN entering in landscape THEN the tabs tray expandedOffset is set to 0`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        // expandedOffset is only used if isFitToContents == false
+        behavior.isFitToContents = false
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_LANDSCAPE)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 4,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
+        assertEquals(0, behavior.expandedOffset)
+    }
+
+    @Test
+    fun `WHEN entering in portrait THEN the tabs tray expandedOffset is set bigger than 0`() {
+        val behavior = spyk(BottomSheetBehavior<ConstraintLayout>())
+        // expandedOffset is only used if isFitToContents == false
+        behavior.isFitToContents = false
+        val interactor = mockk<DefaultNavigationInteractor>()
+        val testFragment = createAddedTestFragment { Fragment() }
+        val orientationFlow = MutableStateFlow(Configuration.ORIENTATION_PORTRAIT)
+
+        behavior.setUpTrayBehavior(
+            maxNumberOfTabs = 4,
+            numberForExpandingTray = 5,
+            navigationInteractor = interactor,
+            lifecycleScope = testFragment.lifecycleScope,
+            orientationFlow
+        )
+
+        assertEquals(EXPANDED_OFFSET_IN_PORTRAIT_DP, behavior.expandedOffset)
     }
 }

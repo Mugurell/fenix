@@ -6,12 +6,16 @@ package org.mozilla.fenix.tabstray
 
 import android.content.res.Configuration
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+
+@VisibleForTesting internal const val EXPANDED_OFFSET_IN_LANDSCAPE_DP = 0
+@VisibleForTesting internal const val EXPANDED_OFFSET_IN_PORTRAIT_DP = 40
 
 class TraySheetBehaviorCallback(
     private val behavior: BottomSheetBehavior<ConstraintLayout>,
@@ -44,6 +48,12 @@ fun BottomSheetBehavior<ConstraintLayout>.setUpTrayBehavior(
 
     lifecycleScope.launchWhenStarted {
         currentOrientation.collect {
+            expandedOffset = if (it == Configuration.ORIENTATION_LANDSCAPE) {
+                EXPANDED_OFFSET_IN_LANDSCAPE_DP
+            } else {
+                EXPANDED_OFFSET_IN_PORTRAIT_DP
+            }
+
             state = if (it == Configuration.ORIENTATION_LANDSCAPE || maxNumberOfTabs >= numberForExpandingTray) {
                 BottomSheetBehavior.STATE_EXPANDED
             } else {
